@@ -731,6 +731,7 @@ sub checkWallLength {
 # Checks whether an object is inside someone else's spell area.
 # (Traps are also "area spells").
 sub objectInsideSpell {
+	return 0 if ($config{'allowKillSteal'});
 	my $object = shift;
 	my $ignore_party_members = shift;
 	$ignore_party_members = 1 if (!defined $ignore_party_members);
@@ -770,6 +771,7 @@ sub objectIsMovingTowards {
 #
 # Check whether an object is moving towards a player.
 sub objectIsMovingTowardsPlayer {
+	return 0 if ($config{'allowKillSteal'});
 	my $obj = shift;
 	my $ignore_party_members = shift;
 	$ignore_party_members = 1 if (!defined $ignore_party_members);
@@ -1411,6 +1413,7 @@ sub checkFollowMode {
 # Checks whether a monster is "clean" (not being attacked by anyone).
 sub checkMonsterCleanness {
 	return 1 if (!$config{attackAuto});
+	return 1 if ($config{'allowKillSteal'});
 	my $ID = $_[0];
 	return 1 if $playersList->getByID($ID) || $slavesList->getByID($ID);
 	my $monster = $monstersList->getByID($ID);
@@ -2286,6 +2289,7 @@ sub pickupitems {
 }
 
 sub positionNearPlayer {
+	return 0 if ($config{'allowKillSteal'});
 	my $r_hash = shift;
 	my $dist = shift;
 
