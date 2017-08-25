@@ -41,4 +41,9 @@ sub new {
 	return $self;
 }
 
+sub sendSellBuyComplete {
+	my ($self) = @_;
+	$self->sendToServer(pack 'C*', 0xD4, 0x09);
+}
+
 1;
