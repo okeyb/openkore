@@ -1562,7 +1562,7 @@
 2569#Shawl_Of_Affection#
 2570#Shawl_Of_Judgement#
 2571#Eden_Group_Manteau_II#
-2573#Archangel_Wing#
+2573#Archangel_Wings#
 2574#Ur's_Manteau#
 2575#Peuz's_Manteau#
 2576#Heroic_Backpack#
@@ -1574,7 +1574,7 @@
 2582#Salvage_Cape#
 2586#WoE_Manteau#
 2587#WoE_Muffler#
-2589#Fallen_Angel_Wing#
+2589#Fallen_Angel_Wings#
 2590#Buwaya_Sack_Cloth#
 2591#Buwaya_Sack_Cloth(Bayani)#
 2596#Sharel_Manteau#
@@ -5032,6 +5032,7 @@
 9062#Novice_Poring_Egg#
 9099#Teddy_Bear_Egg#
 9101#Portable_cage_for_Scatleton#
+9113#Skelion_Egg#
 10001#Skull_Helm#
 10002#Monster_Oxygen_Mask#
 10003#Transparent_Head_Protector#
@@ -5071,6 +5072,7 @@
 10038#Horn_Barrier#
 10039#placeholder#
 10040#Red_Bell_Necklace#
+10042#Dark_Mane#
 11000#History_book_of_Prontera#
 11001#Adventure_Story_Vol.1#
 11002#Chef_King_Orleans_Vol.1#
@@ -5153,6 +5155,7 @@
 11607#Sweet_Crepe#
 11608#Chocolate_Egg#
 11609#Tasty_Cookie_Egg#
+11616#Yummy_Meat#
 11701#(null)#
 11706#Steak#
 11707#Roast_Beef#
@@ -7478,7 +7481,7 @@
 17380#Satanic_Shield_Shadow_Box#
 17381#Lucky_Care_Package_Remix#
 17382#Overseas_Care_Package_IX#
-17383#Cadi_Shield_Shadow_Box#
+17383#Blast_from_the_Past_Box#
 17384#Bloody_Shoes_Shadow_Box#
 17385#Liberation_Shoes_Shadow_Box#
 17386#Chemical_Shoes_Shadow_Box#
@@ -7578,6 +7581,7 @@
 17851#Box_of_Rusty_Quivers#
 17852#Costume_Box_I_Feline_Fine#
 17859#Costume_Box_VIII_Spoopy_Spectre#
+17860#Costume_Box:_Spooptacular#
 17876#Costume_Box:_Garment_Edition#
 17877#RESTARTer_Pack#
 17878#RESTARTer_Pack_Plus#
@@ -7748,7 +7752,7 @@
 18663#Sunglasses_Baseball_Hat#
 18664#Stunner_Shades#
 18665#Orange_In_Mouth#
-18666#CD_In_Mouth#
+18666#CD_in_Mouth#
 18667#Cat_Lace_Hairband#
 18668#Droopy_Turtle_Hat#
 18669#Cowhide_Hat#
@@ -8906,6 +8910,7 @@
 23477#September_Costume_Box#
 23507#October_Costume_Box#
 23508#iRO_2017_Oct_CosBox2#
+23516#November_Costume_Box_Ani_Maul#
 24012#Shadow_Weapon#
 24013#Shadow_Armor#
 24014#Shadow_Shoes#
@@ -9299,6 +9304,7 @@
 31140#Costume_Black_Cowboy_Hat#
 31141#Costume_Cactus_Flower_Corsage#
 31144#Costume_Native_Feather_Headband#
+31158#Costume_Squirrel_Ear_Hat#
 31160#Costume_Rune_Helm#
 31161#Costume_Tiger_Mask#
 31162#Costume_Shaving_Foam#
@@ -9309,6 +9315,7 @@
 31167#Costume_Happy_Droopy_Lunatic_Ears_(Black)#
 31168#Costume_Mouton_Life_(Blue)#
 31172#Costume_Los_Pollos_Locos#
+31179#Costume_Wolf_Masquerade#
 31181#Costume_Rosary's_Necklace#
 31182#Costume_Side_Cap#
 31183#Costume_Fallen_Angel's_Blessing#
@@ -9355,3 +9362,11 @@
 31232#Costume_Long_Twin_(Brown)#
 31233#Costume_Long_Twin_(Purple)#
 31234#Costume_Persica#
+31246#Costume_Humming_Bird#
+31247#Costume_Hippo_Hat#
+31248#Costume_Isabella_Red_Ears#
+31249#Costume_Hopping_Rabbit#
+31250#Costume_Wonderful_Beast_Ears#
+31251#Costume_Cat's_Mouth#
+31252#Costume_White_Cat_Ears_Hat#
+31256#Costume_Jaguar_Mask#
