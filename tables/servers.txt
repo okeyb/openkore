@@ -26,7 +26,7 @@ addTableFolders bRO
 charBlockSize 144
 pinCode 1
 charDeleteDateType 1
-sendCryptKeys 0x3DB81A4A, 0x788A68B5, 0x7D0E0CE4
+sendCryptKeys 0x0B631FD0, 0x168603D2, 0x6DA37F6E
 
 [Brazil - bRO: Thor]
 ip 200.229.50.3
@@ -45,7 +45,7 @@ addTableFolders bRO
 charBlockSize 144
 pinCode 1
 charDeleteDateType 1
-sendCryptKeys 0x3DB81A4A, 0x788A68B5, 0x7D0E0CE4
+sendCryptKeys 0x0B631FD0, 0x168603D2, 0x6DA37F6E
 
 ## http://euro-ro.net/
 [Europe - euRO]
@@ -64,14 +64,14 @@ serverEncoding Western
 addTableFolders fRO
 charBlockSize 116
 
-[Indonesia - idRO: Midgard]
-ip 202.43.167.67
+[Indonesia - idRO: Midgard,Asgard ,Valhalla]
+ip 202.93.25.131
 port 6900
 master_version 12
 version 2
 patchserver wpatch.ragnarok.co.id
 patchpath /patch02
-serverType idRO
+serverType idRO_Renewal
 secureLogin 1
 secureLogin_type 0
 secureLogin_requestCode
@@ -140,7 +140,7 @@ charBlockSize 145
 pauseCharLogin 1
 patchserver ropatch1.gravityus.com
 patchpath /repatch
-sendCryptKeys 0x4DE34E60, 0x4A5F4EDA, 0x129471FA
+sendCryptKeys 0x2C086579, 0x5CFD0D69, 0x59D610D1
 
 
 
@@ -518,32 +518,3 @@ charBlockSize 147
 addTableFolders kRO/RagexeRE_2014_10_22b;translated;translated/kRO_english;kRO
 clientHash 82d12c914f5ad48fd96fcf7ef4cc492d
 pinCode 1
-
-# clientside: ? (2010-01-26aRagexeRE.exe)
-# serverside: ?
-[KoreRO]
-dead 1
-ip kronos.sca-gaming.net
-port 6900
-private 1
-master_version 20
-version 23
-serverType kRO_RagexeRE_2010_07_14a
-serverEncoding Western
-charBlockSize 112
-chatLangCode 1
-addTableFolders pserver/KoreRO;eA;kRO/RagexeRE_2010_07_14a;translated/kRO_english;kRO
-
-# clientside: ? (2010-07-30aRagexeRE.exe)
-# serverside: ?
-[AegisRO]
-ip 23.88.84.215
-port 6900
-private 1
-master_version 14
-version 26
-serverType kRO_RagexeRE_2010_07_14a
-serverEncoding Western
-charBlockSize 112
-chatLangCode 0
-addTableFolders pserver/AegisRO;eA;kRO/RagexeRE_2010_07_14a;translated/kRO_english;kRO

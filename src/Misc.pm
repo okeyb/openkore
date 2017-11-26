@@ -749,7 +749,7 @@ sub objectInsideSpell {
 	my ($x, $y) = ($object->{pos_to}{x}, $object->{pos_to}{y});
 	foreach (@spellsID) {
 		my $spell = $spells{$_};
-		if ((!$ignore_party_members || !$char->{party} || !$char->{party}{users}{$spell->{sourceID}})
+		if ((!$ignore_party_members || !$char->{party}{joined} || !$char->{party}{users}{$spell->{sourceID}})
 		  && $spell->{sourceID} ne $accountID
 		  && $spell->{pos}{x} == $x && $spell->{pos}{y} == $y) {
 			return 1;
@@ -794,7 +794,7 @@ sub objectIsMovingTowardsPlayer {
 		for my $player (@$playersList) {
 			my $ID = $player->{ID};
 			next if (
-			     ($ignore_party_members && $char->{party} && $char->{party}{users}{$ID})
+			     ($ignore_party_members && $char->{party}{joined} && $char->{party}{users}{$ID})
 			  || (defined($player->{name}) && existsInList($config{tankersList}, $player->{name}))
 			  || $player->statusActive('EFFECTSTATE_SPECIALHIDING'));
 			if (checkMovementDirection($obj->{pos}, \%vec, $player->{pos}, 15)) {
@@ -1331,7 +1331,7 @@ sub charSelectScreen {
 					message TF("Canceling delete request for character %s...\n", $chars[$charIndex]{name}), "connection";
 					$messageSender->sendCharDelete2Cancel($chars[$charIndex]{charID});
 				} elsif ($confirm == 2 && int(time) > $chars[$charIndex]{deleteDateTimestamp}) {
-					my $code = $interface->query("Enter your birthdate or deletion code.");
+					my $code = $interface->query(T("Enter your birthdate, deletion code or e-mail."));
 					if (!defined($code)) {
 						goto TOP;
 					}
@@ -1480,7 +1480,7 @@ sub checkMonsterCleanness {
 			my $ID1=$_; 
 			my $source = Actor::get($_); 
 			unless ( existsInList($config{tankersList}, $source->{name}) || 
-				($char->{party} && %{$char->{party}} && $char->{party}{users}{$ID1} && %{$char->{party}{users}{$ID1}})) 
+				($char->{party}{joined} && $char->{party}{users}{$ID1} && %{$char->{party}{users}{$ID1}})) 
 			{ 
 				$allowed = 0; 
 				last; 
@@ -2321,7 +2321,7 @@ sub positionNearPlayer {
 
 	for my $player (@$playersList) {
 		my $ID = $player->{ID};
-		next if ($char->{party} && $char->{party}{users} &&
+		next if ($char->{party}{joined} && $char->{party}{users} &&
 			$char->{party}{users}{$ID});
 		next if (defined($player->{name}) && existsInList($config{tankersList}, $player->{name}));
 		return 1 if (distance($r_hash, $player->{pos_to}) <= $dist);
@@ -2908,7 +2908,7 @@ sub updateDamageTables {
 				);
 			if (existsInList($config{tankersList}, $player->{name}) ||
 			    ($char->{slaves} && %{$char->{slaves}} && $char->{slaves}{$targetID} && %{$char->{slaves}{$targetID}}) ||
-			    ($char->{party} && %{$char->{party}} && $char->{party}{users}{$targetID} && %{$char->{party}{users}{$targetID}})) {
+			    ($char->{party}{joined} && $char->{party}{users}{$targetID} && %{$char->{party}{users}{$targetID}})) {
 				# Monster attacks party member or our slave
 				$monster->{dmgToParty} += $damage;
 				$monster->{missedToParty}++ if ($damage == 0);
@@ -3034,7 +3034,7 @@ sub updateDamageTables {
 			}
 
 			if (existsInList($config{tankersList}, $player->{name}) || ($char->{slaves} && $char->{slaves}{$sourceID}) ||
-			    ($char->{party} && %{$char->{party}} && $char->{party}{users}{$sourceID} && %{$char->{party}{users}{$sourceID}})) {
+			    ($char->{party}{joined} && $char->{party}{users}{$sourceID} && %{$char->{party}{users}{$sourceID}})) {
 				$monster->{dmgFromParty} += $damage;
 				
 				if ($damage == 0) {
@@ -3888,7 +3888,7 @@ sub getActorNames {
 
 # return ID based on name if party member is online
 sub findPartyUserID {
-	if ($char->{party} && %{$char->{party}}) {
+	if ($char->{party}{joined}) {
 		my $partyUserName = shift;
 		for (my $j = 0; $j < @partyUsersID; $j++) {
 	        	next if ($partyUsersID[$j] eq "");
@@ -4239,7 +4239,7 @@ sub checkPlayerCondition {
 				return 0 if (!inRange($char->{hp}, $config{$prefix."_hp"}));
 			}
 		# Target is Actor::Player in our Party
-		} elsif ($char->{party} && $char->{party}{users}{$id}) {
+		} elsif ($char->{party}{joined} && $char->{party}{users}{$id}) {
 			# Fix Heal when Target HP is not set yet.
 			# return 0 if (!defined($player->{hp}) || $player->{hp} == 0);
 			return 0 if ($char->{party}{users}{$id}{hp} == 0);
