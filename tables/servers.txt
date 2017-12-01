@@ -26,7 +26,7 @@ addTableFolders bRO
 charBlockSize 144
 pinCode 1
 charDeleteDateType 1
-sendCryptKeys 0x0B631FD0, 0x168603D2, 0x6DA37F6E
+sendCryptKeys 0x495A63D3, 0x054E61B1, 0x7A3E5C5F
 
 [Brazil - bRO: Thor]
 ip 200.229.50.3
@@ -45,7 +45,7 @@ addTableFolders bRO
 charBlockSize 144
 pinCode 1
 charDeleteDateType 1
-sendCryptKeys 0x0B631FD0, 0x168603D2, 0x6DA37F6E
+sendCryptKeys 0x495A63D3, 0x054E61B1, 0x7A3E5C5F
 
 ## http://euro-ro.net/
 [Europe - euRO]
@@ -97,7 +97,7 @@ patchpath /patch02
 addTableFolders iRO
 charBlockSize 145
 charDeleteDateType 1
-sendCryptKeys 0x1B426AB7, 0x5ECD7AF9, 0x180B4482
+sendCryptKeys 0x3D4F4C9C, 0x25C66FE4, 0x175F3BCF
 
 [International - iRO: Sakray]
 # http://playragnarok.com
@@ -140,7 +140,7 @@ charBlockSize 145
 pauseCharLogin 1
 patchserver ropatch1.gravityus.com
 patchpath /repatch
-sendCryptKeys 0x2C086579, 0x5CFD0D69, 0x59D610D1
+sendCryptKeys 0x62DA6614, 0x62D57CCE, 0x6AD13D29
 
 
 
@@ -470,6 +470,22 @@ addTableFolders cRO
 
 ####################
 # Private RO Servers
+
+## http://gombak-gamerz.com/
+[GGamerzRO]
+ip 116.251.223.176
+port 6900
+private 1
+master_version 1
+version 55
+recvpackets recvpackets_20151104.txt
+serverType kRO_RagexeRE_2015_11_04a
+serverEncoding Western
+charBlockSize 147
+pinCode 1
+addTableFolders pserver/ggRO
+clientHash fa058c003da60688ef1f8baffa0d3135
+sendCryptKeys 0x4C17382A, 0x7ED174C9, 0x29961E4F
 
 [Localhost]
 ip localhost
