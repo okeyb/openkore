@@ -26,7 +26,7 @@ addTableFolders bRO
 charBlockSize 144
 pinCode 1
 charDeleteDateType 1
-sendCryptKeys 0x495A63D3, 0x054E61B1, 0x7A3E5C5F
+sendCryptKeys 0x5E411C41, 0x5C415C41, 0x5C415C41
 
 [Brazil - bRO: Thor]
 ip 200.229.50.3
@@ -45,7 +45,7 @@ addTableFolders bRO
 charBlockSize 144
 pinCode 1
 charDeleteDateType 1
-sendCryptKeys 0x495A63D3, 0x054E61B1, 0x7A3E5C5F
+sendCryptKeys 0x5E411C41, 0x5C415C41, 0x5C415C41
 
 ## http://euro-ro.net/
 [Europe - euRO]
@@ -97,7 +97,7 @@ patchpath /patch02
 addTableFolders iRO
 charBlockSize 145
 charDeleteDateType 1
-sendCryptKeys 0x3D4F4C9C, 0x25C66FE4, 0x175F3BCF
+sendCryptKeys 0x65DB6DF1, 0x427617B9, 0x007D2C69
 
 [International - iRO: Sakray]
 # http://playragnarok.com
@@ -140,7 +140,7 @@ charBlockSize 145
 pauseCharLogin 1
 patchserver ropatch1.gravityus.com
 patchpath /repatch
-sendCryptKeys 0x62DA6614, 0x62D57CCE, 0x6AD13D29
+sendCryptKeys 0x2CD61064, 0x62A530E1, 0x5CE4304A
 
 
 
@@ -154,6 +154,27 @@ serverType 7
 secureLogin 1
 serverEncoding Japanese
 addTableFolders Old
+
+
+[Korea - kRO:Zero]
+ip 112.175.128.137
+port 6950
+master_version 0
+version 19
+secureLogin 0
+secureLogin_type 0
+secureLogin_requestCode
+secureLogin_account 0
+serverType Zero
+serverEncoding Korean
+charBlockSize 145 #i think new charBlockSize
+gameGuard 0
+addTableFolders kRO/Zero;kRO
+pinCode 1
+storageEncryptKey 0x050B6F79, 0x0202C179, 0x0E20120, 0x04FA43E3, 0x0179B6C8, 0x05973DF2, 0x07D8D6B, 0x08CB9ED9
+OTT_ip 112.175.128.135
+OTT_port 6900
+sendCryptKeys 0x718D0388, 0x20042F67, 0x56A11525
 
 [Korea - kRO: Sara/Rangidis/Thanatos]
 ip 112.175.128.137
@@ -485,7 +506,7 @@ charBlockSize 147
 pinCode 1
 addTableFolders pserver/ggRO
 clientHash fa058c003da60688ef1f8baffa0d3135
-sendCryptKeys 0x4C17382A, 0x7ED174C9, 0x29961E4F
+sendCryptKeys 0x4C17382A, 0x29961E4F, 0x7ED174C9
 
 [Localhost]
 ip localhost
@@ -534,3 +555,4 @@ charBlockSize 147
 addTableFolders kRO/RagexeRE_2014_10_22b;translated;translated/kRO_english;kRO
 clientHash 82d12c914f5ad48fd96fcf7ef4cc492d
 pinCode 1
+

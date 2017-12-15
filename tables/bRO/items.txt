@@ -7004,7 +7004,7 @@
 //------------Aplicar em 2015-12-08--------------------
 //*****************************************************
 20070#Capuz de Alpaca Fofinha#
-19702#Gorro Natalino#
+19702#Gorro Natalino Vermelho#
 18838#Touca de Angeling#
 //*****************************************************
 //------------Aplicar em 2015-12-15--------------------
@@ -8030,4 +8030,41 @@
 19296#Chapéu Chique com Pena#
 19316#Capuz de Esquilo#
 31203#Churrasquelmo#
+//*****************************************************
+//------------Aplicar em 2017-12-05--------------------
+//*****************************************************
+19924#Máscara de Odin#
+20300#Máscara Vento da Colina#
+20098#Adorno Vampiresco#
+20401#Espírito angelical#
+19915#Pequeno Par de Chifres#
+//*****************************************************
+//------------Aplicar em 2017-12-12--------------------
+//*****************************************************
+20198#Orelhas Peludinhas#
+20248#Peruca de Saiadim#
+20116#Fones de Sereia#
+19022#Pedra Filosofal#
+19306#Carta de Comodo#
+//*****************************************************
+//------------Clock Tower Nightmare--------------------
+//*****************************************************
+2717#Relógio de Bolso#
+2971#Relógio de Bolso#
+16024#Quatrilho#
+1668#Bengala#
+15089#Fraque#
+22515#Chave do Tempo Distorcido#
+18874#Monóculo#
+//*****************************************************
+//------------Clock Tower Nightmare Cards--------------
+//*****************************************************
+4625#Carta Vigia do Tempo#
+4626#Carta Marca-Tempo#
+4627#Carta Despertador#
+4628#Carta Neo Punk#
+4629#Carta Ancião Ancestral#
+4630#Carta Diretor#
+4631#Carta Visconde Coruja#
+4632#Carta Marquês Coruja#
 //file end
