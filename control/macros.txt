@@ -1,0 +1,32 @@
+macro Test {
+    $x = @eval(30+@rand(-3,3)); $y = @eval(20+@rand(-4,5))
+    do move $x $y moc_para01
+    $x = @eval(38+@rand(-5,5)); $y = @eval(30+@rand(-2,5))
+    do move $x $y moc_para01
+    do talknpc 38 38 c r2 c r6 n
+    pause @rand(1,3) 
+
+    $x = @eval(30+@rand(-3,3)); $y = @eval(20+@rand(-4,5))
+    do move $x $y moc_para01
+    pause 2
+    do move 30 10 moc_para01
+    pause @rand(5,10)
+    
+    $x = @eval(179+@rand(-5,5)); $y = @eval(60+@rand(-2,3))
+    do move 179 60 payon
+    do talknpc 179 66 c c c r1 n
+    pause 2 
+
+    $x = @eval(175+@rand(-5,5)); $y = @eval(105+@rand(-2,3))
+    do move $x $y payon
+    pause @rand(1,5)
+    do talknpc 177 111 c r0 n
+    pause @rand(5,10)
+}
+
+macro rand {
+    $x = @eval(@arg("$.pos", 1) + @rand(-5,5))
+    $y = @eval(@arg("$.pos", 2) + @rand(-2,5))
+    do move $x $y
+}
+
