@@ -3138,3 +3138,9 @@ bra_dun02 261 265 bra_dun01 199 37
 bra_in01 144 187 bra_in01 0 206 102 c r0 n
 bra_in01 206 188 bra_dun01 87 47 0 n
 bra_dun01 87 43 bra_in01 206 185 0 n
+aldebaran 140 135 c_tower1 199 159
+aldebaran 140 135 c_tower1 199 159
+aldebaran 140 135 c_tower1 199 159
+aldebaran 140 135 c_tower1 199 159
+lasa_dun02 146 58 lasa_dun03 190 15
+lasa_dun03 190 15 lasa_dun02 146 54
