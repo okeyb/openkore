@@ -33,9 +33,9 @@ To run OpenKore you will need:
 | `fRO` | Europe(french) RO | working | sctnightcore | 
 | `mRO` | Malaysian RO | Need Verification | N/A |
 | `thRO` | Thai RO | Need Verification | N/A |
-| `cRO` | Chinese RO | Need Verification | N/A |
-| `kRO:Zero` | New Korea server | Working 90% | alisonrag sctnightcore(temp) SkylorD(temp) |
-| `pServer` | update servertybe |sT2012-2017 work |SkylorD sctnightcore |
+| `cRO` | Chinese RO | working | alisonrag, sctnightcore(temp) |
+| `kRO:Zero` | New Korea server | Need unpack,recvpacket,sync,key | alisonrag sctnightcore(temp) SkylorD(temp) |
+| `pServer` | update servertybe | Need find recvpacket | SkylorD, sctnightcore |
 
 ## Contributing
 
@@ -45,10 +45,10 @@ OpenKore is developed by a [team](https://github.com/OpenKore/openkore/graphs/co
 
 * [OpenKore Wiki](http://wiki.openkore.com/)
 * [OpenKore forum](http://forums.openkore.com/)
-* [IRC Channel](https://webchat.freenode.net/?channels=openkore) : https://kiwiirc.com/client/irc.freenode.net/?nick=IRC-Source_?#openkore
+* [IRC Channel](https://webchat.freenode.net/?channels=openkore) 
+* [Connect IRC with Kiwiirc](https://kiwiirc.com/client/irc.freenode.net/?nick=IRC-Source_?#openkore)
 * [Brazilian Community](http://openkorebrasil.org/)
 * [Taiwanese Community](http://optw.nva-hk.com/forum.php)
-
 ## Warning
 
 Other communities are not affiliated to openkore.com

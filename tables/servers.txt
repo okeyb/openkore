@@ -26,7 +26,7 @@ addTableFolders bRO
 charBlockSize 144
 pinCode 1
 charDeleteDateType 1
-sendCryptKeys 0x5E411C41, 0x5C415C41, 0x5C415C41
+sendCryptKeys 0x3DBE2F85, 0x577565D3, 0x22754487
 
 [Brazil - bRO: Thor]
 ip 200.229.50.3
@@ -45,7 +45,7 @@ addTableFolders bRO
 charBlockSize 144
 pinCode 1
 charDeleteDateType 1
-sendCryptKeys 0x5E411C41, 0x5C415C41, 0x5C415C41
+sendCryptKeys 0x3DBE2F85, 0x577565D3, 0x22754487
 
 ## http://euro-ro.net/
 [Europe - euRO]
@@ -94,7 +94,7 @@ serverType iRO
 serverEncoding Western
 patchserver ropatch1.gravityus.com
 patchpath /patch02
-addTableFolders iRO
+addTableFolders iRO/Renewal;iRO
 charBlockSize 145
 charDeleteDateType 1
 sendCryptKeys 0x65DB6DF1, 0x427617B9, 0x007D2C69
@@ -117,7 +117,7 @@ charBlockSize 145
 [International - iRO: Loki Classic]
 # http://playragnarok.com
 title International - iRO: Classic.Loki
-ip 128.241.92.203
+ip 128.241.92.202
 port 6900
 master_version 1
 version 18
@@ -488,6 +488,25 @@ serverType cRO
 serverEncoding Simplified Chinese
 charBlockSize 144
 addTableFolders cRO
+
+# http://ro.zhaouc.com/
+[cRO - China: Taren]
+ip 118.89.42.108
+port 6900
+master_version 4
+version 1
+serverType cRO
+serverEncoding GBK
+charBlockSize 147
+addTableFolders cRO
+gameGuard 1
+secureLogin 0
+secureLogin_type 0
+secureLogin_requestCode
+secureLogin_account 0
+storageEncryptKey 0x050B6F79, 0x0202C179, 0x0E20120, 0x04FA43E3, 0x0179B6C8, 0x05973DF2, 0x07D8D6B, 0x08CB9ED9
+pinCode 1
+charDeleteDateType 1
 
 ####################
 # Private RO Servers
