@@ -559,6 +559,7 @@ sub new {
 		'099F' => ['area_spell_multiple2', 'v a*', [qw(len spellInfo)]], # -1
 		'09A0' => ['sync_received_characters', 'V', [qw(sync_Count)]],
 		'09CA' => ['area_spell_multiple3', 'v a*', [qw(len spellInfo)]], # -1
+		'09CB' => ['skill_used_no_damage', 'v V a4 a4 C', [qw(skillID amount targetID sourceID success)]],
 		'09CD' => ['message_string', 'v V', [qw(msg_id para1)]], #8
 		'09CF' => ['gameguard_request'],
 		'09DB' => ['actor_moved', 'v C a4 a4 v3 V v5 a4 v6 a4 a2 v V C2 a6 C2 v2 a9 Z*', [qw(len object_type ID charID walk_speed opt1 opt2 option type hair_style weapon shield lowhead tick tophead midhead hair_color clothes_color head_dir costume guildID emblemID manner opt3 stance sex coords xSize ySize lv font opt4 name)]],
@@ -566,6 +567,7 @@ sub new {
 		'09DD' => ['actor_exists', 'v C a4 a4 v3 V v11 a4 a2 v V C2 a3 C3 v2 a9 Z*', [qw(len object_type ID charID walk_speed opt1 opt2 option type hair_style weapon shield lowhead tophead midhead hair_color clothes_color head_dir costume guildID emblemID manner opt3 stance sex coords xSize ySize act lv font opt4 name)]],
 		'09DE' => ['private_message', 'v V Z25 Z*', [qw(len charID privMsgUser privMsg)]],
 		'09DF' => ['private_message_sent', 'C V', [qw(type charID)]],
+		'09E5' => ['shop_sold_long', 'v2 a4 V2', [qw(number amount charID time zeny)]],
 		'09F8' => ['quest_all_list3', 'v3 a*', [qw(len count unknown message)]],
 		'09F9' => ['quest_add', 'V C V2 v', [qw(questID active time_start time amount)]],
 		'09FA' => ['quest_update_mission_hunt', 'v2 a*', [qw(len amount mobInfo)]],
@@ -2886,7 +2888,7 @@ sub received_characters {
 		$chars[$slot]{int} = $int;
 		$chars[$slot]{dex} = $dex;
 		$chars[$slot]{luk} = $luk;
-		$chars[$slot]{sex} = ($masterServer->{charBlockSize} == 145 && $masterServer->{serverType} =~ /^iRO/) && (unpack( 'C', substr($args->{RAW_MSG}, $i + $blockSize -1)) =~ /^0|1$/)? unpack( 'C', substr($args->{RAW_MSG}, $i + $blockSize -1)) : $accountSex2;
+		$chars[$slot]{sex} = ($masterServer->{charBlockSize} == 145 && (grep { $masterServer->{serverType} eq $_ } qw( iRO ))) && (unpack( 'C', substr($args->{RAW_MSG}, $i + $blockSize -1)) =~ /^0|1$/)? unpack( 'C', substr($args->{RAW_MSG}, $i + $blockSize -1)) : $accountSex2;
 
 		setCharDeleteDate($slot, $deleteDate) if $deleteDate;
 		$chars[$slot]{nameID} = unpack("V", $chars[$slot]{ID});
@@ -2899,7 +2901,7 @@ sub received_characters {
 	## Note to devs: If other official servers support > 3 characters, then
 	## you should add these other serverTypes to the list compared here:
 	if (($args->{switch} eq '099D') && 
-		(grep { $masterServer->{serverType} eq $_ } qw( twRO iRO idRO bRO ))
+		(grep { $masterServer->{serverType} eq $_ } qw( twRO iRO idRO bRO cRO ))
 	) {
 		$net->setState(1.5);
 		if ($charSvrSet{sync_CountDown} && $config{'XKore'} ne '1' && $config{'XKore'} ne '3') {
@@ -3258,7 +3260,7 @@ sub shop_sold {
 	my $earned = $amount * $articles[$number]{price};
 	$shopEarned += $earned;
 	$articles[$number]{quantity} -= $amount;
-	my $msg = TF("sold: %s - %s %sz\n", $amount, $articles[$number]{name}, $earned);
+	my $msg = TF("Sold: %s x %s - %sz\n", $articles[$number]{name}, $amount, $earned);
 	shopLog($msg);
 	message($msg, "sold");
 
@@ -3267,10 +3269,11 @@ sub shop_sold {
 	Plugins::callHook(
 		'vending_item_sold',
 		{
-			#These first two entries are equivalent to $args' contents.
 			'vendShopIndex' => $number,
 			'amount' => $amount,
 			'vendArticle' => $articles[$number], #This is a hash
+			'zenyEarned' => $earned,
+			'packetType' => "short",
 		}
 	);
 
@@ -3284,7 +3287,52 @@ sub shop_sold {
 			closeShop();
 		}
 	}
-}##end shop_sold()
+}
+
+sub shop_sold_long {
+	my ($self, $args) = @_;
+
+	# sold something
+	my $number = $args->{number};
+	my $amount = $args->{amount};
+	my $earned = $args->{zeny};
+	my $charID = getHex($args->{charID});
+	my $when = $args->{time};
+
+	$articles[$number]{sold} += $amount;
+	$shopEarned += $earned;
+	$articles[$number]{quantity} -= $amount;
+	
+	my $msg = TF("[%s] Sold: %s x %s - %sz (Buyer charID: %s)\n", getFormattedDate($when), $articles[$number]{name}, $amount, $earned, $charID);
+	shopLog($msg);
+	message($msg, "sold");
+
+	# Call hook before we possibly remove $articles[$number] or
+	# $articles itself as a result of the sale.
+	Plugins::callHook(
+		'vending_item_sold',
+		{
+			'vendShopIndex' => $number,
+			'amount' => $amount,
+			'vendArticle' => $articles[$number], #This is a hash
+			'buyerCharID' => $args->{charID},
+			'zenyEarned' => $earned,
+			'time' => $when,
+			'packetType' => "long",
+		}
+	);
+
+	# Adjust the shop's articles for sale, and notify if the sold
+	# item and/or the whole shop has been sold out.
+	if ($articles[$number]{quantity} < 1) {
+		message TF("sold out: %s\n", $articles[$number]{name}), "sold";
+		#$articles[$number] = "";
+		if (!--$articles){
+			message T("Items have been sold out.\n"), "sold";
+			closeShop();
+		}
+	}
+}
 
 
 # TODO:
