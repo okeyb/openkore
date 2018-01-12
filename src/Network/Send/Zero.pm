@@ -17,69 +17,33 @@ use base qw(Network::Send::ServerType0);
 use Globals; 
 use Network::Send::ServerType0;
 use Log qw(error debug message);
+use I18N qw(stringToBytes);
 
 sub new {
 	my ($class) = @_;
 	my $self = $class->SUPER::new(@_);
 
 	my %packets = (
-		'08AC' => ['actor_action', 'a4 C', [qw(targetID type)]],
-		'0941' => ['actor_info_request', 'a4', [qw(ID)]],
-		'0862' => ['actor_look_at', 'v C', [qw(head body)]],
-		'0885' => ['actor_name_request', 'a4', [qw(ID)]],
-		'087B' => ['buy_bulk_buyer', 'a4 a4 a*', [qw(buyerID buyingStoreID itemInfo)]], #Buying store
-		'0934' => ['buy_bulk_closeShop'],
-		'08A4' => ['buy_bulk_openShop', 'a4 c a*', [qw(limitZeny result itemInfo)]], #Selling store
-		'0436' => ['buy_bulk_request', 'a4', [qw(ID)]], #6
-		'0864' => ['character_move', 'a3', [qw(coords)]],
-		'0893' => ['friend_request', 'a*', [qw(username)]],# len 26
-		'0897' => ['homunculus_command', 'v C', [qw(commandType, commandID)]],
-		'0366' => ['item_drop', 'a2 v', [qw(ID amount)]],
-		'093A' => ['item_list_res', 'v V2 a*', [qw(len type action itemInfo)]],
-		'0835' => ['item_take', 'a4', [qw(ID)]],
-		'0920' => ['map_login', 'a4 a4 a4 V C', [qw(accountID charID sessionID tick sex)]],
-		'088D' => ['party_join_request_by_name', 'Z24', [qw(partyName)]],
-		'0281' => ['skill_use', 'v2 a4', [qw(lv skillID targetID)]],
-		'0878' => ['skill_use_location', 'v4', [qw(lv skillID x y)]],
-		'0870' => ['storage_item_add', 'a2 V', [qw(ID amount)]],
-		'0936' => ['storage_item_remove', 'a2 V', [qw(ID amount)]],
-		'0959' => ['storage_password'],
-		'095F' => ['sync', 'V', [qw(time)]],
-		'0ACF' => ['master_login', 'a4 Z25 a32 a5', [qw(game_code username password_rijndael flag)]],
+		'0439' => ['item_use', 'a2 a4', [qw(ID targetID)]],
 		'0825' => ['token_login', 'v v x v Z24 a27 Z17 Z15 a*', [qw(len version master_version username password_rijndael mac ip token)]],
+		'098F' => ['char_delete2_accept', 'v a4 a*', [qw(length charID code)]],
+		'0A39' => ['char_create', 'a24 C v4 C', [qw(name slot hair_color hair_style job_id unknown sex)]],
+		'0ACF' => ['master_login', 'a4 Z25 a32 a5', [qw(game_code username password_rijndael flag)]],
 	);
 
 	$self->{packet_list}{$_} = $packets{$_} for keys %packets;
 
 	my %handlers = qw(
-		master_login 0ACF
-		actor_action 08AC
-		actor_info_request 0941
-		actor_look_at 0862
-		actor_name_request 0885
-		buy_bulk_buyer 087B
-		buy_bulk_closeShop 0934
-		buy_bulk_openShop 08A4
-		buy_bulk_request 0436
-		character_move 0864
-		friend_request 0893
-		homunculus_command 0897
-		item_drop 0366
-		item_list_res 093A
-		item_take 0835
-		map_login 0920
-		party_join_request_by_name 088D
-		skill_use 0281
-		skill_use_location 0878
-		storage_item_add 0870
-		storage_item_remove 0936
-		storage_password 0959
-		sync 095F
+		item_use 0439
+		token_login 0825
+		master_login 0ACF		
 	);
 
 	while (my ($k, $v) = each %packets) { $handlers{$v->[0]} = $k}
 
 	$self->{packet_lut}{$_} = $handlers{$_} for keys %handlers;
+
+	$self->{char_create_version} = 0x0A39;
 
 	return $self;
 }
@@ -123,7 +87,7 @@ sub sendTokenToServer {
 		ip => $ip,
 		token => $token,
 	});	
-	
+
 	$self->sendToServer($msg);
 
 	debug "Sent sendTokenLogin\n", "sendPacket", 2;
@@ -143,6 +107,35 @@ sub encrypt_password {
 	} else {
 		error("Password is not configured");
 	}
+}
+
+sub reconstruct_char_delete2_accept {
+	my ($self, $args) = @_;
+	# length = [packet:2] + [length:2] + [charid:4] + [code_length]
+	$args->{length} = 8 + length($args->{code});
+	debug "Sent sendCharDelete2Accept. CharID: $args->{charID}, Code: $args->{code}, Length: $args->{length}\n", "sendPacket", 2;
+}
+
+sub sendCharCreate {
+	my ( $self, $slot, $name, $hair_style, $hair_color, $job_id, $sex ) = @_;
+
+	$hair_color ||= 1;
+	$hair_style ||= 0;
+	$job_id     ||= 0;    # novice
+	$sex        ||= 0;    # female
+
+	my $msg = $self->reconstruct({
+		switch => 'char_create',
+		name => stringToBytes( $name ),
+		slot => $slot,
+		hair_color => $hair_color,
+		hair_style => $hair_style,
+		job_id => 0,
+		unknown => 0,
+		sex => $sex,
+	});
+
+	$self->sendToServer($msg);
 }
 
 1;

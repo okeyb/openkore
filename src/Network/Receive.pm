@@ -235,7 +235,8 @@ sub received_characters_unpackString {
 	for ($masterServer && $masterServer->{charBlockSize}) {
 		# unknown purpose (0 = disabled, otherwise displays "Add-Ons" sidebar) (from rA)
 		# change $hairstyle
-		return 'a4 V9 v V2 v4 V v9 Z24 C8 v Z16 V x4 x4 x4 x1' if $_ == 147;
+		return 'a4 Z8 V Z8 V6 v V2 v4 V v9 Z24 C8 v a16 Z16 C' if $_ == 155;
+		return 'a4 V9 v V2 v4 V v9 Z24 C8 v a16 Z16 C' if $_ == 147;
 		return 'a4 V9 v V2 v14 Z24 C8 v Z16 V x4 x4 x4 C' if $_ == 145;
 		return 'a4 V9 v V2 v14 Z24 C8 v Z16 V x4 x4 x4' if $_ == 144;
 		# change slot feature
@@ -1902,64 +1903,6 @@ sub login_pin_code_request {
 			$startingzeny = $chars[$config{'char'}]{'zeny'} unless defined $startingzeny;
 			$sentWelcomeMessage = 1;
 		}
-	} elsif ($args->{flag} == 8) {
-		# PIN code incorrect.
-		error T("PIN code is incorrect.\n");
-		#configModify('loginPinCode', '', 1);
-		return if (!($self->queryAndSaveLoginPinCode(T("The login PIN code that you entered is incorrect. Please re-enter your login PIN code."))));
-		$messageSender->sendLoginPinCode($args->{seed}, 0);
-	} else {
-		debug("login_pin_code_request: unknown flag $args->{flag}\n");
-	}
-
-	$timeout{master}{time} = time;
-}
-
-sub login_pin_code_request2 {
-	my ($self, $args) = @_;
-	# flags:
-	# 0 - correct - RMS
-	# 1 - requested (already defined) - RMS
-	# 3 - expired - RMS(?)
-	# 4 - requested (not defined) - RMS
-	# 7 - correct - RMS
-	# 8 - incorrect - RMS
-	if ($args->{flag} == 7) { # removed check for seed 0, eA/rA/brA sends a normal seed.
-		message T("PIN code is correct.\n"), "success";
-		# call charSelectScreen
-		if (charSelectScreen(1) == 1) {
-			$firstLoginMap = 1;
-			$startingzeny = $chars[$config{'char'}]{'zeny'} unless defined $startingzeny;
-			$sentWelcomeMessage = 1;
-		}
-	} elsif ($args->{flag} == 1) {
-		# PIN code query request.
-		$accountID = $args->{accountID};
-		debug sprintf("Account ID: %s (%s)\n", unpack('V',$accountID), getHex($accountID));
-
-		message T("Server requested PIN password in order to select your character.\n"), "connection";
-		return if ($config{loginPinCode} eq '' && !($self->queryAndSaveLoginPinCode()));
-		$messageSender->sendLoginPinCode($args->{seed}, 0);
-	} elsif ($args->{flag} == 4) {
-		# PIN code has never been set before, so set it.
-		warning T("PIN password is not set for this account.\n"), "connection";
-		return if ($config{loginPinCode} eq '' && !($self->queryAndSaveLoginPinCode()));
-
-		while ((($config{loginPinCode} =~ /[^0-9]/) || (length($config{loginPinCode}) != 4)) &&
-		  !($self->queryAndSaveLoginPinCode("Your PIN should never contain anything but exactly 4 numbers.\n"))) {
-			error T("Your PIN should never contain anything but exactly 4 numbers.\n");
-		}
-		$messageSender->sendLoginPinCode($args->{seed}, 1);
-	} elsif ($args->{flag} == 3) {
-		# should we use the same one again? is it possible?
-		warning T("PIN password expired.\n"), "connection";
-		return if ($config{loginPinCode} eq '' && !($self->queryAndSaveLoginPinCode()));
-
-		while ((($config{loginPinCode} =~ /[^0-9]/) || (length($config{loginPinCode}) != 4)) &&
-		  !($self->queryAndSaveLoginPinCode("Your PIN should never contain anything but exactly 4 numbers.\n"))) {
-			error T("Your PIN should never contain anything but exactly 4 numbers.\n");
-		}
-		$messageSender->sendLoginPinCode($args->{seed}, 1);
 	} elsif ($args->{flag} == 8) {
 		# PIN code incorrect.
 		error T("PIN code is incorrect.\n");
@@ -4033,13 +3976,31 @@ sub npc_talk_number {
 
 sub npc_talk_responses {
 	my ($self, $args) = @_;
+	
 	# 00b7: word len, long ID, string str
 	# A list of selections appeared on the NPC message dialog.
 	# Each item is divided with ':'
 	my $msg = $args->{RAW_MSG};
 
 	my $ID = substr($msg, 4, 4);
+	my $nameID = unpack 'V', $ID;
+	
+	# Auto-create Task::TalkNPC if not active
+	if (!AI::is("NPC") && !(AI::is("route") && $char->args->getSubtask && UNIVERSAL::isa($char->args->getSubtask, 'Task::TalkNPC'))) {
+		debug "An unexpected npc conversation has started, auto-creating a TalkNPC Task\n";
+		my $task = Task::TalkNPC->new(type => 'autotalk', nameID => $nameID, ID => $ID);
+		AI::queue("NPC", $task);
+		# TODO: The following npc_talk hook is only added on activation.
+		# Make the task module or AI listen to the hook instead
+		# and wrap up all the logic.
+		$task->activate;
+		Plugins::callHook('npc_autotalk', {
+			task => $task
+		});
+	}
+	
 	$talk{ID} = $ID;
+	$talk{nameID} = $nameID;
 	my $talk = unpack("Z*", substr($msg, 8));
 	$talk = substr($msg, 8) if (!defined $talk);
 	$talk = bytesToString($talk);
@@ -4163,6 +4124,62 @@ sub skill_exchange_item {
 	# $args->{val} : ????
 	##
 	$skillExchangeItem = $args->{type} + 1;
+}
+
+# Allowed to RefineUI by server
+# '0AA0' => ['refineui_opened', '' ,[qw()]],
+# @author [Cydh]
+sub refineui_opened {
+	my ($self, $args) = @_;
+	message TF("RefineUI is opened. Type 'i' to check equipment and its index. To continue: refineui select [ItemIdx]\n"), "info";
+	$refineUI->{open} = 1;
+}
+
+# Received refine info for selected item
+# '0AA2' => ['refineui_info', 'v v C a*' ,[qw(index bless materials)]],
+# @param args Packet data
+# @author [Cydh]
+sub refineui_info {
+	my ($self, $args) = @_;
+
+	if ($args->{len} > 7) {
+		$refineUI->{itemIndex} = $args->{index};
+		$refineUI->{bless} = $args->{bless};
+
+		my $item = $char->inventory->[$refineUI->{invIndex}];
+		my $bless = $char->inventory->getByNameID($Blacksmith_Blessing);
+
+		message T("========= RefineUI Info =========\n"), "info";
+		message TF("Target Equip:\n".
+				"- Index: %d\n".
+				"- Name: %s\n",
+				$refineUI->{invIndex}, $item ? itemName($item) : "Unknown."),
+				"info";
+
+		message TF("%s:\n".
+				"- Needed: %d\n".
+				"- Owned: %d\n",
+				#itemNameSimple($Blacksmith_Blessing)
+				"Blacksmith Blessing", $refineUI->{bless}, $bless ? $bless->{amount} : 0),
+				"info";
+
+		@{$refineUI->{materials}} = map { my %r; @r{qw(nameid chance zeny)} = unpack 'v C V', $_; \%r} unpack '(a7)*', $args->{materials};
+
+		my $msg = center(T(" Possible Materials "), 53, '-') ."\n" .
+				T("Mat_ID      %           Zeny        Material                        \n");
+		foreach my $mat (@{$refineUI->{materials}}) {
+			my $myMat = $char->inventory->getByNameID($mat->{nameid});
+			my $myMatCount = sprintf("%d ea %s", $myMat ? $myMat->{amount} : 0, itemNameSimple($mat->{nameid}));
+			$msg .= swrite(
+				"@>>>>>>>> @>>>>> @>>>>>>>>>>>>   @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<",
+				[$mat->{nameid}, $mat->{chance}, $mat->{zeny}, $myMatCount]);
+		}
+		$msg .= ('-'x53) . "\n";
+		message $msg, "info";
+		message TF("Continue: refineui refine %d [Mat_ID] [catalyst_toggle] to continue.\n", $refineUI->{invIndex}), "info";
+	} else {
+		error T("Equip cannot be refined, try different equipment. Type 'i' to check equipment and its index.\n");
+	}
 }
 
 1;
