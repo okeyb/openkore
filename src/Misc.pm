@@ -2328,36 +2328,50 @@ sub objectRemoved {
 }
 
 ##
-# items_control($name)
+# items_control($name, $nameID)
 #
 # Returns the items_control.txt settings for item name $name.
-# If $name has no specific settings, use 'all'.
+# If $name has no specific settings, try using the setting for $nameID.
+# If both have no specific setting, use 'all'.
+# If 'all' is not set, return "do nothing" (empty hash);
 sub items_control {
-	my $name = shift;
-	my $nameID = shift;	
-	return $items_control{lc($name)} || $items_control{lc($nameID)} || $items_control{all} || {};
+	my ($name, $nameID) = @_;
+
+	return $items_control{lc($name)} || $items_control{$nameID} || $items_control{all} || {};
 }
 
 ##
-# mon_control($name)
+# mon_control($name, $nameID)
 #
 # Returns the mon_control.txt settings for monster name $name.
-# If $name has no specific settings, use 'all'.
+# If $name has no specific settings, try using the setting for $nameID.
+# If both have no specific setting, use 'all'.
+# If 'all' is not set, return "attack";
 sub mon_control {
-	my $name = shift;
-	my $nameID = shift;
+	my ($name, $nameID) = @_;
+	
 	return $mon_control{lc($name)} || $mon_control{$nameID} || $mon_control{all} || { attack_auto => 1 };
 }
 
 ##
-# pickupitems($name)
+# pickupitems($name, $nameID)
 #
 # Returns the pickupitems.txt settings for item name $name.
-# If $name has no specific settings, use 'all'.
+# If $name has no specific settings, try using the setting for $nameID.
+# If both have no specific setting, use 'all'.
+# If 'all' is not set, return "pick up" (1);
 sub pickupitems {
-	my ($name) = @_;
+	my ($name, $nameID) = @_;
 
-	return ($pickupitems{lc($name)} ne '') ? $pickupitems{lc($name)} : $pickupitems{all};
+	if (exists $pickupitems{lc($name)}) {
+		return $pickupitems{lc($name)};
+	} elsif (exists $pickupitems{$nameID}) {
+		return $pickupitems{$nameID};
+	} elsif (exists $pickupitems{all}) {
+		return $pickupitems{all};
+	}
+	
+	return 1;
 }
 
 sub positionNearPlayer {
