@@ -139,7 +139,7 @@ sub new {
 		'00D2' => ['ignore_all_result', 'C2', [qw(type error)]],
 		'00D4' => ['whisper_list'],
 		'00D6' => ['chat_created'],
-		'00D7' => ['chat_info', 'x2 a4 a4 v2 C a*', [qw(ownerID ID limit num_users public title)]],
+		'00D7' => ['chat_info', 'v a4 a4 v2 C a*', [qw(len ownerID ID limit num_users public title)]],
 		'00D8' => ['chat_removed', 'a4', [qw(ID)]],
 		'00DA' => ['chat_join_result', 'C', [qw(type)]],
 		'00DB' => ['chat_users'],
@@ -414,7 +414,7 @@ sub new {
 		'02B5' => ['quest_update_mission_hunt', 'v2 a*', [qw(len amount mobInfo)]],		# var len
 		'02B7' => ['quest_active', 'V C', [qw(questID active)]],
 		'02B8' => ['party_show_picker', 'a4 v C3 a8 v C', [qw(sourceID nameID identified broken upgrade cards location type)]],
-		'02B9' => ['hotkeys'],
+		'02B9' => ['hotkeys', 'a*', [qw(hotkeys)]],
 		'02C1' => ['npc_chat', 'x2 a4 a4 Z*', [qw(ID color message)]],
 		'02C5' => ['party_invite_result', 'Z24 V', [qw(name type)]],
 		'02C6' => ['party_invite', 'a4 Z24', [qw(ID name)]],
@@ -465,7 +465,7 @@ sub new {
 
 		'0449' => ['hack_shield_alarm'],
 		'07D8' => ['party_exp', 'V C2', [qw(type itemPickup itemDivision)]],
-		'07D9' => ['hotkeys'], # 268 # hotkeys:38
+		'07D9' => ['hotkeys', 'a*', [qw(hotkeys)]], # 268 # hotkeys:38
 		'07DB' => ['stat_info', 'v V', [qw(type val)]], # 8
 		'07E1' => ['skill_update', 'v V v3 C', [qw(skillID type lv sp range up)]],
 		'07E2' => ['msg_string', 'v V', [qw(index para1)]],
@@ -583,7 +583,7 @@ sub new {
 		'09FD' => ['actor_moved', 'v C a4 a4 v3 V v5 a4 v6 a4 a2 v V C2 a6 C2 v2 a9 Z*', [qw(len object_type ID charID walk_speed opt1 opt2 option type hair_style weapon shield lowhead tick tophead midhead hair_color clothes_color head_dir costume guildID emblemID manner opt3 stance sex coords xSize ySize lv font opt4 name)]],
 		'09FE' => ['actor_connected', 'v C a4 a4 v3 V v11 a4 a2 v V C2 a3 C2 v2 a9 Z*', [qw(len object_type ID charID walk_speed opt1 opt2 option type hair_style weapon shield lowhead tophead midhead hair_color clothes_color head_dir costume guildID emblemID manner opt3 stance sex coords xSize ySize lv font opt4 name)]],
 		'09FF' => ['actor_exists', 'v C a4 a4 v3 V v11 a4 a2 v V C2 a3 C3 v2 a9 Z*', [qw(len object_type ID charID walk_speed opt1 opt2 option type hair_style weapon shield lowhead tophead midhead hair_color clothes_color head_dir costume guildID emblemID manner opt3 stance sex coords xSize ySize act lv font opt4 name)]],
-		'0A00' => ['hotkeys'],
+		'0A00' => ['hotkeys', 'C a*', [qw(rotate hotkeys)]], # 269 # hotkeys:38
 		'0A05' => ['rodex_add_item', 'C a2 v2 C4 a8 a25 v a5', [qw(fail ID amount nameID type identified broken upgrade cards options weight unknow)]],   # 53
 		'0A07' => ['rodex_remove_item', 'C a2 v2', [qw(result ID amount weight)]],   # 9
 		'0A09' => ['deal_add_other', 'v C V C3 a8 a25', [qw(nameID type amount identified broken upgrade cards options)]],
@@ -611,14 +611,14 @@ sub new {
 		'0AA0' => ['refineui_opened', '' ,[qw()]],
 		'0AA2' => ['refineui_info', 'v v C a*' ,[qw(len index bless materials)]],
 		'0AC4' => ['account_server_info', 'x2 a4 a4 a4 a4 a26 C x17 a*', [qw(sessionID accountID sessionID2 lastLoginIP lastLoginTime accountSex serverInfo)]],
-		'0AC5' => ['received_character_ID_and_Map', 'a4 Z16 a4 v', [qw(charID mapName mapIP mapPort)]], #miss 128 unknow
+		'0AC5' => ['received_character_ID_and_Map', 'a4 Z16 a4 v a128', [qw(charID mapName mapIP mapPort unknown)]],
 		'0AC7' => ['map_changed', 'Z16 v2 a4 v', [qw(map x y IP port)]], # 28
 		'0AC9' => ['account_server_info', 'v a4 a4 a4 a4 a26 C a6 a*', [qw(len sessionID accountID sessionID2 lastLoginIP lastLoginTime accountSex unknown serverInfo)]],
 		'0ACB' => ['stat_info', 'v Z8', [qw(type val)]],
 		'0ACC' => ['exp', 'a4 Z8 v2', [qw(ID val type flag)]],
 		'0ACD' => ['login_error', 'C Z20', [qw(type date)]],
-		'0ADC' => ['flag', 'a*', [qw(unknown)]],
-		'0ADE' => ['flag', 'a*', [qw(unknown)]],
+		'0ADC' => ['flag', 'V', [qw(unknown)]],
+		'0ADE' => ['flag', 'V', [qw(unknown)]],
 		'0ADF' => ['actor_info', 'a4 a4 Z24 Z24', [qw(ID charID name prefix_name)]],
 		'0ADD' => ['item_exists', 'a4 v2 C v2 C2 v C v', [qw(ID nameID type identified x y subx suby amount show_effect effect_type )]],
 		'0AE3' => ['received_login_token', 'v l Z20 Z*', [qw(len login_type flag login_token)]],
@@ -2967,55 +2967,6 @@ sub received_characters {
 	}
 }
 
-sub received_character_ID_and_Map {
-	my ($self, $args) = @_;
-	message T("Received character ID and Map IP from Character Server\n"), "connection";
-	$net->setState(4);
-	undef $conState_tries;
-	$charID = $args->{charID};
-
-	if ($net->version == 1) {
-		undef $masterServer;
-		$masterServer = $masterServers{$config{master}} if ($config{master} ne "");
-	}
-
-	my ($map) = $args->{mapName} =~ /([\s\S]*)\./; # cut off .gat
-	my $map_noinstance;
-	($map_noinstance, undef) = Field::nameToBaseName(undef, $map); # Hack to clean up InstanceID
-	if (!$field || $map ne $field->name()) {
-		eval {
-			$field = new Field(name => $map);
-		};
-		if (my $e = caught('FileNotFoundException', 'IOException')) {
-			error TF("Cannot load field %s: %s\n", $map_noinstance, $e);
-			undef $field;
-		} elsif ($@) {
-			die $@;
-		}
-	}
-
-	$map_ip = makeIP($args->{mapIP});
-	$map_ip = $masterServer->{ip} if ($masterServer && $masterServer->{private});
-	$map_port = $args->{mapPort};
-	message TF("----------Game Info----------\n" .
-		"Char ID: %s (%s)\n" .
-		"MAP Name: %s\n" .
-		"MAP IP: %s\n" .
-		"MAP Port: %s\n" .
-		"-----------------------------\n", getHex($charID), unpack("V1", $charID),
-		$args->{mapName}, $map_ip, $map_port), "connection";
-	checkAllowedMap($map_noinstance);
-	message(T("Closing connection to Character Server\n"), "connection") unless ($net->version == 1);
-	$net->serverDisconnect(1);
-	main::initStatVars();
-}
-
-sub received_sync {
-	return unless changeToInGameState();
-	debug "Received Sync\n", 'parseMsg', 2;
-	$timeout{'play'}{'time'} = time;
-}
-
 sub refine_result {
 	my ($self, $args) = @_;
 	if ($args->{fail} == 0) {
@@ -3280,94 +3231,6 @@ sub sense_result {
 			$args->{ice}, $args->{earth}, $args->{fire}, $args->{wind}, $args->{poison}, $args->{holy}, $args->{dark},
 			$args->{spirit}, $args->{undead}), "list";
 }
-
-# Your shop has sold an item -- one packet sent per item sold.
-#
-sub shop_sold {
-	my ($self, $args) = @_;
-
-	# sold something
-	my $number = $args->{number};
-	my $amount = $args->{amount};
-
-	$articles[$number]{sold} += $amount;
-	my $earned = $amount * $articles[$number]{price};
-	$shopEarned += $earned;
-	$articles[$number]{quantity} -= $amount;
-	my $msg = TF("Sold: %s x %s - %sz\n", $articles[$number]{name}, $amount, $earned);
-	shopLog($msg);
-	message($msg, "sold");
-
-	# Call hook before we possibly remove $articles[$number] or
-	# $articles itself as a result of the sale.
-	Plugins::callHook(
-		'vending_item_sold',
-		{
-			'vendShopIndex' => $number,
-			'amount' => $amount,
-			'vendArticle' => $articles[$number], #This is a hash
-			'zenyEarned' => $earned,
-			'packetType' => "short",
-		}
-	);
-
-	# Adjust the shop's articles for sale, and notify if the sold
-	# item and/or the whole shop has been sold out.
-	if ($articles[$number]{quantity} < 1) {
-		message TF("sold out: %s\n", $articles[$number]{name}), "sold";
-		#$articles[$number] = "";
-		if (!--$articles){
-			message T("Items have been sold out.\n"), "sold";
-			closeShop();
-		}
-	}
-}
-
-sub shop_sold_long {
-	my ($self, $args) = @_;
-
-	# sold something
-	my $number = $args->{number};
-	my $amount = $args->{amount};
-	my $earned = $args->{zeny};
-	my $charID = getHex($args->{charID});
-	my $when = $args->{time};
-
-	$articles[$number]{sold} += $amount;
-	$shopEarned += $earned;
-	$articles[$number]{quantity} -= $amount;
-	
-	my $msg = TF("[%s] Sold: %s x %s - %sz (Buyer charID: %s)\n", getFormattedDate($when), $articles[$number]{name}, $amount, $earned, $charID);
-	shopLog($msg);
-	message($msg, "sold");
-
-	# Call hook before we possibly remove $articles[$number] or
-	# $articles itself as a result of the sale.
-	Plugins::callHook(
-		'vending_item_sold',
-		{
-			'vendShopIndex' => $number,
-			'amount' => $amount,
-			'vendArticle' => $articles[$number], #This is a hash
-			'buyerCharID' => $args->{charID},
-			'zenyEarned' => $earned,
-			'time' => $when,
-			'packetType' => "long",
-		}
-	);
-
-	# Adjust the shop's articles for sale, and notify if the sold
-	# item and/or the whole shop has been sold out.
-	if ($articles[$number]{quantity} < 1) {
-		message TF("sold out: %s\n", $articles[$number]{name}), "sold";
-		#$articles[$number] = "";
-		if (!--$articles){
-			message T("Items have been sold out.\n"), "sold";
-			closeShop();
-		}
-	}
-}
-
 
 # TODO:
 # Add 'dispose' support
@@ -5008,31 +4871,6 @@ sub auction_add_item {
 	else {
 		message TF("Succeeded to add item with index: %s.\n", $args->{ID}), "info";
 	}
-}
-
-# this info will be sent to xkore 2 clients
-sub hotkeys {
-	my ($self, $args) = @_;
-	undef $hotkeyList;
-	my $msg;
-	$msg .= center(" " . T("Hotkeys") . " ", 79, '-') . "\n";
-	$msg .=	swrite(sprintf("\@%s \@%s \@%s \@%s", ('>'x3), ('<'x30), ('<'x5), ('>'x3)),
-			["#", T("Name"), T("Type"), T("Lv")]);
-	$msg .= sprintf("%s\n", ('-'x79));
-	my $j = 0;
-	for (my $i = 2; $i < $args->{RAW_MSG_SIZE}; $i+=7) {
-		$hotkeyList->[$j]->{type} = unpack("C1", substr($args->{RAW_MSG}, $i, 1));
-		$hotkeyList->[$j]->{ID} = unpack("V1", substr($args->{RAW_MSG}, $i+1, 4));
-		$hotkeyList->[$j]->{lv} = unpack("v1", substr($args->{RAW_MSG}, $i+5, 2));
-
-		$msg .= swrite(TF("\@%s \@%s \@%s \@%s", ('>'x3), ('<'x30), ('<'x5), ('>'x3)),
-			[$j, $hotkeyList->[$j]->{type} ? Skill->new(idn => $hotkeyList->[$j]->{ID})->getName() : itemNameSimple($hotkeyList->[$j]->{ID}),
-			$hotkeyList->[$j]->{type} ? T("skill") : T("item"),
-			$hotkeyList->[$j]->{lv}]);
-		$j++;
-	}
-	$msg .= sprintf("%s\n", ('-'x79));
-	debug($msg, "list");
 }
 
 sub hack_shield_alarm {

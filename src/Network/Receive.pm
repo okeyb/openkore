@@ -29,6 +29,7 @@ use Socket qw(inet_aton inet_ntoa);
 
 use AI;
 use Globals;
+use Field;
 #use Settings;
 use Log qw(message warning error debug);
 use FileParsers qw(updateMonsterLUT updateNPCLUT);
@@ -260,38 +261,78 @@ sub received_characters_unpackString {
 
 sub parse_account_server_info {
 	my ($self, $args) = @_;
+	my $server_info;
+
+	if ($args->{switch} eq '0069') {  # DEFAULT PACKET
+		$server_info = {
+			len => 32,
+			types => 'a4 v Z20 v2 x2',
+			keys => [qw(ip port name users display)],
+		};
+
+	} elsif ($args->{switch} eq '0AC4') { # kRO Zero 2017, kRO ST 201703+
+		$server_info = {
+			len => 160,
+			types => 'a4 v Z20 v3 a128',
+			keys => [qw(ip port name users state property unknown)],
+		};
+		
+	} elsif ($args->{switch} eq '0AC9') { # cRO 2017
+		$server_info = {
+			len => 154,
+			types => 'a20 V a2 a126',
+			keys => [qw(name users unknown ip_port)],
+		};
+		
+	} else { # this can't happen
+		return;
+	}
+
+	@{$args->{servers}} = map {
+		my %server;
+		@server{@{$server_info->{keys}}} = unpack($server_info->{types}, $_);
+		if ($masterServer && $masterServer->{private}) {
+			$server{ip} = $masterServer->{ip};
+		} elsif ($args->{switch} eq '0AC9') {
+			@server{qw(ip port)} = split (/\:/, $server{ip_port});
+			$server{ip} =~ s/^\s+|\s+$//g;
+			$server{port} =~ tr/0-9//cd;
+		} else {
+			$server{ip} = inet_ntoa($server{ip});
+		}
+		$server{name} = bytesToString($server{name});
+		\%server
+	} unpack '(a'.$server_info->{len}.')*', $args->{serverInfo};
 
 	if (length $args->{lastLoginIP} == 4 && $args->{lastLoginIP} ne "\0"x4) {
 		$args->{lastLoginIP} = inet_ntoa($args->{lastLoginIP});
 	} else {
 		delete $args->{lastLoginIP};
 	}
-
-	@{$args->{servers}} = map {
-		my %server;
-		@server{qw(ip port name users display)} = unpack 'a4 v Z20 v2 x2', $_;
-		if ($masterServer && $masterServer->{private}) {
-			$server{ip} = $masterServer->{ip};
-		} else {
-			$server{ip} = inet_ntoa($server{ip});
-		}
-		$server{name} = bytesToString($server{name});
-		\%server
-	} unpack '(a32)*', $args->{serverInfo};
 }
 
 sub reconstruct_account_server_info {
 	my ($self, $args) = @_;
-
+	
 	$args->{lastLoginIP} = inet_aton($args->{lastLoginIP});
 
-	$args->{serverInfo} = pack '(a32)*', map { pack(
-		'a4 v Z20 v2 x2',
-		inet_aton($_->{ip}),
-		$_->{port},
-		stringToBytes($_->{name}),
-		@{$_}{qw(users display)},
-	) } @{$args->{servers}};
+	if(exists $packetParser->{packet_lut}{account_server_info} && $packetParser->{packet_lut}{account_server_info} eq "0AC4") {
+		$args->{serverInfo} = pack '(a160)*', map { pack(
+			'a4 v Z20 v3 a128',
+			inet_aton($_->{ip}),
+			$_->{port},
+			stringToBytes($_->{name}),
+			@{$_}{qw(users state property unknown)},
+		) } @{$args->{servers}};
+	} else {
+		$args->{serverInfo} = pack '(a32)*', map { pack(
+			'a4 v Z20 v2 x2',
+			inet_aton($_->{ip}),
+			$_->{port},
+			stringToBytes($_->{name}),
+			@{$_}{qw(users display)},
+		) } @{$args->{servers}};
+	}
 }
 
 sub account_server_info {
@@ -598,6 +639,7 @@ sub actor_display {
 	$actor->{walk_speed} = $args->{walk_speed} / 1000 if (exists $args->{walk_speed} && $args->{switch} ne "0086");
 	$actor->{time_move} = time;
 	$actor->{time_move_calc} = distance(\%coordsFrom, \%coordsTo) * $actor->{walk_speed};
+	$actor->{len} = $args->{len} if $args->{len};
 	# 0086 would need that?
 	$actor->{object_type} = $args->{object_type} if (defined $args->{object_type});
 
@@ -1755,6 +1797,93 @@ sub shop_skill {
 	message TF("You can sell %s items!\n", $number);
 }
 
+# Your shop has sold an item -- one packet sent per item sold.
+#
+sub shop_sold {
+	my ($self, $args) = @_;
+
+	# sold something
+	my $number = $args->{number};
+	my $amount = $args->{amount};
+
+	$articles[$number]{sold} += $amount;
+	my $earned = $amount * $articles[$number]{price};
+	$shopEarned += $earned;
+	$articles[$number]{quantity} -= $amount;
+	my $msg = TF("Sold: %s x %s - %sz\n", $articles[$number]{name}, $amount, $earned);
+	shopLog($msg);
+	message($msg, "sold");
+
+	# Call hook before we possibly remove $articles[$number] or
+	# $articles itself as a result of the sale.
+	Plugins::callHook(
+		'vending_item_sold',
+		{
+			'vendShopIndex' => $number,
+			'amount' => $amount,
+			'vendArticle' => $articles[$number], #This is a hash
+			'zenyEarned' => $earned,
+			'packetType' => "short",
+		}
+	);
+
+	# Adjust the shop's articles for sale, and notify if the sold
+	# item and/or the whole shop has been sold out.
+	if ($articles[$number]{quantity} < 1) {
+		message TF("sold out: %s\n", $articles[$number]{name}), "sold";
+		#$articles[$number] = "";
+		if (!--$articles){
+			message T("Items have been sold out.\n"), "sold";
+			closeShop();
+		}
+	}
+}
+
+sub shop_sold_long {
+	my ($self, $args) = @_;
+
+	# sold something
+	my $number = $args->{number};
+	my $amount = $args->{amount};
+	my $earned = $args->{zeny};
+	my $charID = getHex($args->{charID});
+	my $when = $args->{time};
+
+	$articles[$number]{sold} += $amount;
+	$shopEarned += $earned;
+	$articles[$number]{quantity} -= $amount;
+	
+	my $msg = TF("[%s] Sold: %s x %s - %sz (Buyer charID: %s)\n", getFormattedDate($when), $articles[$number]{name}, $amount, $earned, $charID);
+	shopLog($msg);
+	message($msg, "sold");
+
+	# Call hook before we possibly remove $articles[$number] or
+	# $articles itself as a result of the sale.
+	Plugins::callHook(
+		'vending_item_sold',
+		{
+			'vendShopIndex' => $number,
+			'amount' => $amount,
+			'vendArticle' => $articles[$number], #This is a hash
+			'buyerCharID' => $args->{charID},
+			'zenyEarned' => $earned,
+			'time' => $when,
+			'packetType' => "long",
+		}
+	);
+
+	# Adjust the shop's articles for sale, and notify if the sold
+	# item and/or the whole shop has been sold out.
+	if ($articles[$number]{quantity} < 1) {
+		message TF("sold out: %s\n", $articles[$number]{name}), "sold";
+		#$articles[$number] = "";
+		if (!--$articles){
+			message T("Items have been sold out.\n"), "sold";
+			closeShop();
+		}
+	}
+}
+
 # 01D0 (spirits), 01E1 (coins), 08CF (amulets)
 sub revolving_entity {
 	my ($self, $args) = @_;
@@ -1782,6 +1911,7 @@ sub revolving_entity {
 	if ($sourceID eq $accountID && $entityNum != $char->{spirits}) {
 		$char->{spirits} = $entityNum;
 		$char->{amuletType} = $entityElement;
+		$char->{spiritsType} = $entityType;
 		$entityElement ?
 			# Translation Comment: Message displays following: quantity, the name of the entity and its element
 			message TF("You have %s %s(s) of %s now\n", $entityNum, $entityType, $entityElement), "parseMsg_statuslook", 1 :
@@ -1790,6 +1920,7 @@ sub revolving_entity {
 	} elsif ($entityNum != $actor->{spirits}) {
 		$actor->{spirits} = $entityNum;
 		$actor->{amuletType} = $entityElement;
+		$actor->{spiritsType} = $entityType;
 		$entityElement ?
 			# Translation Comment: Message displays following: actor, quantity, the name of the entity and its element
 			message TF("%s has %s %s(s) of %s now\n", $actor, $entityNum, $entityType, $entityElement), "parseMsg_statuslook", 1 :
@@ -2823,6 +2954,7 @@ sub chat_info {
 		$chat = $chatRooms{$args->{ID}} = {};
 		binAdd(\@chatRoomsID, $args->{ID});
 	}
+	$chat->{len} = $args->{len};
 	$chat->{title} = $title;
 	$chat->{ownerID} = $args->{ownerID};
 	$chat->{limit} = $args->{limit};
@@ -4279,6 +4411,80 @@ sub received_login_token {
 	my $master = $masterServers{$config{master}};
 
 	$messageSender->sendTokenToServer($config{username}, $config{password}, $master->{master_version}, $master->{version}, $args->{login_token}, $args->{len}, $master->{OTT_ip}, $master->{OTT_port});
+}
+
+
+# this info will be sent to xkore 2 clients
+sub hotkeys {
+	my ($self, $args) = @_;
+	undef $hotkeyList;
+	my $msg;
+
+	# TODO: implement this: $hotkeyList->{rotate} = $args->{rotate} if $args->{rotate};
+	$msg .= center(" " . T("Hotkeys") . " ", 79, '-') . "\n";
+	$msg .=	swrite(sprintf("\@%s \@%s \@%s \@%s", ('>'x3), ('<'x30), ('<'x5), ('>'x3)),
+			["#", T("Name"), T("Type"), T("Lv")]);
+	$msg .= sprintf("%s\n", ('-'x79));
+	my $j = 0;
+	for (my $i = 0; $i < length($args->{hotkeys}); $i += 7) {
+		@{$hotkeyList->[$j]}{qw(type ID lv)} = unpack('C V v', substr($args->{hotkeys}, $i, 7));
+		$msg .= swrite(TF("\@%s \@%s \@%s \@%s", ('>'x3), ('<'x30), ('<'x5), ('>'x3)),
+			[$j, $hotkeyList->[$j]->{type} ? Skill->new(idn => $hotkeyList->[$j]->{ID})->getName() : itemNameSimple($hotkeyList->[$j]->{ID}),
+			$hotkeyList->[$j]->{type} ? T("skill") : T("item"),
+			$hotkeyList->[$j]->{lv}]);
+		$j++;
+	}
+	$msg .= sprintf("%s\n", ('-'x79));
+	debug($msg, "list");
+}
+
+sub received_character_ID_and_Map {
+	my ($self, $args) = @_;
+	message T("Received character ID and Map IP from Character Server\n"), "connection";
+	$net->setState(4);
+	undef $conState_tries;
+	$charID = $args->{charID};
+
+	if ($net->version == 1) {
+		undef $masterServer;
+		$masterServer = $masterServers{$config{master}} if ($config{master} ne "");
+	}
+
+	my ($map) = $args->{mapName} =~ /([\s\S]*)\./; # cut off .gat
+	my $map_noinstance;
+	($map_noinstance, undef) = Field::nameToBaseName(undef, $map); # Hack to clean up InstanceID
+	if (!$field || $map ne $field->name()) {
+		eval {
+			$field = new Field(name => $map);
+		};
+		if (my $e = caught('FileNotFoundException', 'IOException')) {
+			error TF("Cannot load field %s: %s\n", $map_noinstance, $e);
+			undef $field;
+		} elsif ($@) {
+			die $@;
+		}
+	}
+
+	$map_ip = makeIP($args->{mapIP});
+	$map_ip = $masterServer->{ip} if ($masterServer && $masterServer->{private});
+	$map_port = $args->{mapPort};
+	message TF("----------Game Info----------\n" .
+		"Char ID: %s (%s)\n" .
+		"MAP Name: %s\n" .
+		"MAP IP: %s\n" .
+		"MAP Port: %s\n" .
+		"-----------------------------\n", getHex($charID), unpack("V1", $charID),
+		$args->{mapName}, $map_ip, $map_port), "connection";
+	checkAllowedMap($map_noinstance);
+	message(T("Closing connection to Character Server\n"), "connection") unless ($net->version == 1);
+	$net->serverDisconnect(1);
+	main::initStatVars();
+}
+
+sub received_sync {
+	return unless changeToInGameState();
+	debug "Received Sync\n", 'parseMsg', 2;
+	$timeout{'play'}{'time'} = time;
 }
 
 1;
