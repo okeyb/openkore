@@ -199,7 +199,7 @@ sub activate {
 	);
 	
 	$self->{mapChangedHook} = Plugins::addHook('Network::Receive::map_changed', \&mapChanged, \@holder);
-	$self->{disconnectedHook} = Plugins::addHook('disconnected', \&disconnected, \@holder);
+	$self->{disconnectedHook} = Plugins::addHook('serverDisconnect/success', \&serverDisconnectSuccess, \@holder);
 }
  
 sub mapChanged {
@@ -208,8 +208,10 @@ sub mapChanged {
 	$self->{map_change} = 1;
 }
 
-sub disconnected {
+sub serverDisconnectSuccess {
 	my (undef, undef, $holder) = @_;
+	return if $holder->[0]->{disconnected};
+	
 	debug "Disconnected during TalkNPC, cancelling task...\n";
 	$holder->[0]->{disconnected} = 1;
 }
@@ -283,18 +285,20 @@ sub iterate {
 			
 		#If there's no conversation clear this task
 		} else {
+			debug "Ending Task::TalkNPC due to mapchange or disconnection, ";
+			
 			if ($self->{stage} == TALKING_TO_NPC) {
-				debug "Ending Task::TalkNPC due to mapchange or disconnection, conversation interrupted and finished.\n";
-				
+				debug "conversation interrupted and finished.\n";
 			} elsif ($self->{stage} == AFTER_NPC_CLOSE) {
-				debug "Ending Task::TalkNPC due to mapchange or disconnection, talk cancel won't be sent.\n";
-				
+				debug "talk cancel won't be sent.\n";
 			} elsif ($self->{stage} == AFTER_NPC_CANCEL) {
-				debug "Ending Task::TalkNPC due to mapchange or disconnection, ending task before timeout.\n";
-				
+				debug "ending task before timeout.\n";
 			} elsif ($self->{stage} == NOT_STARTED) {
-				debug "Ending Task::TalkNPC due to mapchange or disconnection, ending task before conversation started.\n";
+				debug "ending task before conversation started.\n";
+			} else {
+				debug "conversation ended during unhandled stage ". $self->{stage} . ".\n";
 			}
+			
 			$self->conversation_end;
 		}
 	
@@ -664,6 +668,7 @@ sub iterate {
 		
 		if (defined $self->{error_code}) {
 			$self->setError($self->{error_code}, $self->{error_message});
+			debug $self->{error_message} . "\n", 'ai_npcTalk';
 			return;
 		}
 		
@@ -756,7 +761,6 @@ sub cancelTalk {
 	
 	if (defined $self->{error_message}) {
 		debug "Trying to auto close the conversation due to error.\n", 'ai_npcTalk';
-		debug $self->{error_message} . "\n", 'ai_npcTalk';
 	}
 	
 	if ($ai_v{'npc_talk'}{'talk'} eq 'select') {
