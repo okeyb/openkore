@@ -5662,7 +5662,7 @@
 12641#New_Recruit_Pack#
 12642#Fruit_Of_Mastela_Box#
 12643#E_Coin_Pack50#
-12646#Takoyaki#
+12646#Poring_Pretzel#
 12647#Ink_Ball#
 12654#Recruit's_Mount_Gift#
 12658#Transformation_Scroll(Deviruchi)#
@@ -6878,11 +6878,13 @@
 14667#Scroll_of_Health#
 14683#10th_Anniversary_Lucky_Box#
 14706#Pirate_Eyepatch_Box#
+14735#Hop_into_the_Costume_Box#
 14759#Shadow_Armor_Weapon_Box#
 14836#Xin_Niar_Scroll#
 14856#Ancient_Elven_Scroll#
 14884#Weather_Scroll#
 14921#Fancy_February_Costume_Box#
+14924#Overseas_Care_Package_XVI#
 14930#Overseas_Care_Package_Remix_I#
 15000#Bone_Plate#
 15002#Rune_Plate#
@@ -7004,6 +7006,7 @@
 15196#Sea_Dragon_Armor#
 15204#Abyss_Dress#
 15205#Medical_Scrubs#
+15249#Antonio's_Coat#
 16000#Erde#
 16001#Red_Square_Bag#
 16003#Carga_Mace#
@@ -8206,7 +8209,7 @@
 19537#C_Gryphon_Hat#
 19538#Costume:_Full_Moon#
 19539#Costume:_Reginleif_Hairband#
-19540#Costume:_Rabbit_Earplug#
+19540#Costume:_Rabbit_Earmuffs#
 19541#Costume:_White_Romantic_Flower#
 19542#Costume:_Devil_Whisper#
 19543#Oliver_Wolf_Hood#
@@ -8266,7 +8269,7 @@
 19649#Costume:_White_Kitten_Ears#
 19650#Costume_Rainbow_Feather_Decoration#
 19651#C_RWC_Shouting_Mouth#
-19652#placeholder#
+19652#Costume:_Rabbit_Magic_Hat#
 19653#placeholder#
 19654#Costume:_Captain_Carocc's_Hat#
 19655#placeholder#
@@ -8881,6 +8884,7 @@
 22134#Enforcer_Shoes#
 22138#Devil_Worshipper_Shoes#
 22170#Survivor's_Shoes#
+22172#Gray_Wing_Boots#
 22507#Old_Scroll#
 22508#Eden_Group_Mark#
 22511#Fenrir's_Power_Scroll#
@@ -9278,6 +9282,8 @@
 28521#Giant's_Protection#
 28531#Blacksmith's_Gloves#
 28551#Imperial_Glove#
+28564#Valkyrie_Drop#
+28565#Perverse_Demon_Mask#
 28600#Ru_Blue_Book#
 28601#Ru_Gold_Book#
 28604#Crimson_Bible#

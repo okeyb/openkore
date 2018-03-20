@@ -1830,7 +1830,14 @@ sub shop_sold {
 	# Adjust the shop's articles for sale, and notify if the sold
 	# item and/or the whole shop has been sold out.
 	if ($articles[$number]{quantity} < 1) {
-		message TF("sold out: %s\n", $articles[$number]{name}), "sold";
+		message TF("Sold out: %s\n", $articles[$number]{name}), "sold";
+		Plugins::callHook(
+			'vending_item_sold_out',
+			{
+				'vendShopIndex' => $number,
+				'vendArticle' => $articles[$number],
+			}
+		);
 		#$articles[$number] = "";
 		if (!--$articles){
 			message T("Items have been sold out.\n"), "sold";
@@ -1875,7 +1882,14 @@ sub shop_sold_long {
 	# Adjust the shop's articles for sale, and notify if the sold
 	# item and/or the whole shop has been sold out.
 	if ($articles[$number]{quantity} < 1) {
-		message TF("sold out: %s\n", $articles[$number]{name}), "sold";
+		message TF("Sold out: %s\n", $articles[$number]{name}), "sold";
+		Plugins::callHook(
+			'vending_item_sold_out',
+			{
+				'vendShopIndex' => $number,
+				'vendArticle' => $articles[$number],
+			}
+		);
 		#$articles[$number] = "";
 		if (!--$articles){
 			message T("Items have been sold out.\n"), "sold";
@@ -4017,7 +4031,7 @@ sub map_change {
 		ai_clientSuspend(0, 10);
 	} else {
 		$messageSender->sendMapLoaded();
-		$messageSender->sendBlockingPlayerCancel() if(grep { $masterServer->{serverType} eq $_ } qw( Zero )); # request to unfreeze char alisonrag
+		$messageSender->sendBlockingPlayerCancel() if(grep { $masterServer->{serverType} eq $_ } qw( Zero idRO_Renewal )); # request to unfreeze char alisonrag
 		# $messageSender->sendSync(1);
 		$timeout{ai}{time} = time;
 	}
@@ -4485,6 +4499,46 @@ sub received_sync {
 	return unless changeToInGameState();
 	debug "Received Sync\n", 'parseMsg', 2;
 	$timeout{'play'}{'time'} = time;
+}
+
+sub actor_look_at {
+	my ($self, $args) = @_;
+	return unless changeToInGameState();
+
+	my $actor = Actor::get($args->{ID});
+	$actor->{look}{head} = $args->{head};
+	$actor->{look}{body} = $args->{body};
+	debug $actor->nameString . " looks at $args->{body}, $args->{head}\n", "parseMsg";
+}
+
+sub actor_movement_interrupted {
+	my ($self, $args) = @_;
+	return unless changeToInGameState();
+	my %coords;
+	$coords{x} = $args->{x};
+	$coords{y} = $args->{y};
+
+	my $actor = Actor::get($args->{ID});
+	$actor->{pos} = {%coords};
+	$actor->{pos_to} = {%coords};
+	if ($actor->isa('Actor::You') || $actor->isa('Actor::Player')) {
+		$actor->{sitting} = 0;
+	}
+	if ($actor->isa('Actor::You')) {
+		debug "Movement interrupted, your coordinates: $coords{x}, $coords{y}\n", "parseMsg_move";
+		AI::clear("move");
+	}
+	if ($char->{homunculus} && $char->{homunculus}{ID} eq $actor->{ID}) {
+		AI::clear("move");
+	}
+}
+
+sub actor_trapped {
+	my ($self, $args) = @_;
+	# original comment was that ID is not a valid ID
+	# but it seems to be, at least on eAthena/Freya
+	my $actor = Actor::get($args->{ID});
+	debug "$actor->nameString() is trapped.\n";
 }
 
 1;
